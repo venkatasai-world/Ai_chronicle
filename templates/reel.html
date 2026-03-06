@@ -1,0 +1,4 @@
+<div class="reel">
+    <i class="fas fa-play play-icon" onclick="playAudio('news_summary_{{ index }}')"></i>
+    <img src="{{ url_for('static', filename='images/news_summary_' + index|string + '.jpg') }}" alt="News Summary {{ index }}" class="reel-image">
+</div>

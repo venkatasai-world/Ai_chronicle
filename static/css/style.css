@@ -1,0 +1,70 @@
+/* Minimal local stylesheet to replace CDN during development */
+html, body {
+  background: #0a0a0a;
+  color: #ffffff;
+  font-family: sans-serif;
+}
+
+/* Keep basic utility classes used in templates (add more as needed) */
+.text-4xl { font-size: 2.25rem; }
+.font-bold { font-weight: 700; }
+.text-lg { font-size: 1.125rem; }
+.container { max-width: 1024px; margin-left: auto; margin-right: auto; }
+.px-4 { padding-left: 1rem; padding-right: 1rem; }
+.py-8 { padding-top: 2rem; padding-bottom: 2rem; }
+.mx-auto { margin-left: auto; margin-right: auto; }
+.rounded-xl { border-radius: 0.75rem; }
+.w-full { width: 100%; }
+.shadow-2xl { box-shadow: 0 25px 50px -12px rgba(0,0,0,0.75); }
+.bg-black { background-color: #000; }
+.text-white { color: #fff; }
+
+/* Add any additional styles you need here */
+
+/* Gallery-specific styles (from previous template) */
+.reelsContainer {
+  height: 80vh;
+  width: 25vw;
+  margin-top: 4em;
+  display: flex;
+  overflow: auto;
+  gap: 2em;
+  flex-direction: column;
+  scroll-snap-type: y mandatory;
+}
+.reelsContainer::-webkit-scrollbar { display: none; }
+.reel {
+  min-height: 75vh;
+  min-width: 25vw;
+  background-color: black;
+  scroll-snap-align: start;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.reel img { max-height: 100%; max-width: 100%; object-fit: contain; border-radius: 12px; }
+.play-icon {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  font-size: 24px;
+  color: white;
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  padding: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  border: none;
+}
+.play-icon:hover { background-color: rgba(0, 0, 0, 0.8); }
+.load-more-container { position: fixed; bottom: 20px; left: 0; width: 100%; text-align: center; pointer-events: auto; }
+.load-more-button { padding: 8px 17px; border-radius: 8px; background-color: white; color: black; font-weight: bold; cursor: pointer; transition: background-color 0.3s ease, color 0.3s ease; }
+.load-more-button:hover { background-color: rgba(255, 255, 255, 0.1); }
+.load-more-button:disabled { color: gray; border-color: gray; cursor: not-allowed; }
+.load-more-button:disabled:hover { background-color: transparent; }
+
+@media screen and (max-width: 767px) {
+  .reelsContainer { height: 90vh; width: 90vw; margin-top: 2em; }
+  .reel { min-height: 85vh; min-width: 85vw; }
+}

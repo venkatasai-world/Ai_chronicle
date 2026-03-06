@@ -1,0 +1,8 @@
+Flask
+requests
+feedparser
+Pillow
+bing-image-downloader
+edge-tts 
+gunicorn
+groq

@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>News Gallery - AI Chronical</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            background: #000;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        .gallery-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: linear-gradient(180deg, rgba(0,0,0,0.98) 0%, rgba(0,0,0,0.85) 100%);
+            padding: clamp(0.75rem, 3vw, 1.2rem) clamp(1rem, 5vw, 2rem);
+            text-align: center;
+            border-bottom: 2px solid rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .gallery-header h1 {
+            font-size: clamp(1.4rem, 5vw, 2rem);
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff 0%, #ddd 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 1px;
+            margin: 0;
+            line-height: 1.2;
+        }
+
+        .gallery-header p {
+            font-size: clamp(0.8rem, 2.5vw, 1rem);
+            color: #bbb;
+            margin-top: clamp(0.25rem, 1vw, 0.5rem);
+            letter-spacing: 0.5px;
+            margin: clamp(0.25rem, 1vw, 0.5rem) 0 0 0;
+        }
+
+        /* Main Container */
+        .gallery-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin-top: 60px;
+        }
+
+        /* Reels Container */
+        .reelsContainer {
+            height: calc(100vh - 120px);
+            width: clamp(280px, 90vw, 450px);
+            display: flex;
+            flex-direction: column;
+            overflow-y: scroll;
+            overflow-x: hidden;
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+            gap: 1rem;
+            padding: 1rem 0;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .reelsContainer::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Reel Item */
+        .reel {
+            min-height: calc(100vh - 140px);
+            width: 100%;
+            background: linear-gradient(135deg, #111 0%, #1a1a1a 100%);
+            scroll-snap-align: start;
+            scroll-snap-stop: always;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            animation: slideUp 0.5s ease-out;
+        }
+
+        .reel img {
+            max-height: 100%;
+            max-width: 100%;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 16px;
+            will-change: transform;
+        }
+
+        /* Text Overlay on Image */
+        .reel-text-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 25;
+            background: linear-gradient(180deg, 
+                rgba(0,0,0,0) 0%,
+                rgba(0,0,0,0.3) 30%,
+                rgba(0,0,0,0.7) 60%,
+                rgba(0,0,0,0.95) 100%
+            );
+            padding: clamp(1.2rem, 6vw, 3rem);
+            color: white;
+            text-align: center;
+            min-height: clamp(80px, 25vw, 150px);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            width: 100%;
+        }
+
+        .reel-text-overlay h2 {
+            font-size: clamp(1.1rem, 4.5vw, 1.6rem);
+            font-weight: 800;
+            margin: 0 0 clamp(0.6rem, 2.5vw, 1rem) 0;
+            line-height: 1.2;
+            color: #fff;
+            letter-spacing: 0.5px;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+        }
+
+        .reel-text-overlay p {
+            font-size: clamp(1rem, 3.8vw, 1.2rem);
+            margin: 0;
+            color: #e8e8e8;
+            line-height: 1.5;
+            letter-spacing: 0.3px;
+            max-height: 4em;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            text-shadow: 0 2px 6px rgba(0,0,0,0.7);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Play Button */
+        .play-icon {
+            position: absolute;
+            left: 16px;
+            top: 16px;
+            z-index: 10;
+            width: 48px;
+            height: 48px;
+            font-size: clamp(18px, 5vw, 24px);
+            color: #fff;
+            background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%);
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+        }
+
+        .play-icon:hover {
+            background: linear-gradient(135deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.1) 100%);
+            border-color: rgba(255,255,255,0.4);
+            transform: scale(1.1);
+        }
+
+        .play-icon:active {
+            transform: scale(0.95);
+        }
+
+        /* Load More Container */
+        .load-more-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 50;
+            width: 100%;
+            padding: 1.5rem;
+            background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.9) 100%);
+            text-align: center;
+            display: flex;
+            justify-content: center;
+        }
+
+        .load-more-button {
+            padding: clamp(10px, 2.5vw, 14px) clamp(20px, 5vw, 32px);
+            border-radius: 12px;
+            background: linear-gradient(135deg, #fff 0%, #e0e0e0 100%);
+            color: #000;
+            font-weight: 700;
+            font-size: clamp(0.9rem, 2vw, 1rem);
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 8px 24px rgba(255,255,255,0.15);
+            letter-spacing: 0.5px;
+        }
+
+        .load-more-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(255,255,255,0.25);
+        }
+
+        .load-more-button:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .load-more-button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            background: #666;
+        }
+
+        /* Empty State */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            padding: 2rem;
+            text-align: center;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .empty-state h2 {
+            font-size: clamp(1.2rem, 4vw, 1.5rem);
+            margin-bottom: 0.5rem;
+            color: #ccc;
+        }
+
+        .empty-state p {
+            font-size: clamp(0.85rem, 2vw, 0.95rem);
+            color: #777;
+        }
+
+        /* Loading Spinner */
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top: 3px solid #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Tablet Responsiveness */
+        @media (max-width: 1024px) {
+            .reelsContainer {
+                width: clamp(300px, 85vw, 400px);
+            }
+
+            .reel {
+                min-height: calc(100vh - 140px);
+            }
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .gallery-header {
+                padding: clamp(0.5rem, 2vw, 1rem) clamp(0.75rem, 3vw, 1.5rem);
+            }
+
+            .gallery-header h1 {
+                font-size: clamp(1.2rem, 5vw, 1.6rem);
+            }
+
+            .gallery-header p {
+                font-size: clamp(0.75rem, 2vw, 0.95rem);
+            }
+
+            .gallery-wrapper {
+                margin-top: 55px;
+            }
+
+            .reelsContainer {
+                height: calc(100vh - 110px);
+                width: 95vw;
+                max-width: 450px;
+                gap: 0.5rem;
+                padding: 0.5rem 0;
+            }
+
+            .reel {
+                min-height: calc(100vh - 130px);
+                border-radius: 14px;
+            }
+
+            .reel-text-overlay {
+                padding: clamp(1rem, 5vw, 2.2rem);
+                min-height: clamp(70px, 22vw, 140px);
+            }
+
+            .reel-text-overlay h2 {
+                font-size: clamp(1rem, 4vw, 1.4rem);
+                margin-bottom: clamp(0.4rem, 2vw, 0.8rem);
+            }
+
+            .reel-text-overlay p {
+                font-size: clamp(0.95rem, 3.2vw, 1.1rem);
+            }
+
+            .play-icon {
+                width: 45px;
+                height: 45px;
+                font-size: 18px;
+                left: 14px;
+                top: 14px;
+            }
+
+            .load-more-button {
+                padding: 11px 22px;
+                font-size: clamp(0.9rem, 2.5vw, 0.95rem);
+                border-radius: 10px;
+                width: 90%;
+                max-width: 280px;
+            }
+
+            .load-more-container {
+                padding: 1rem;
+            }
+        }
+
+        /* Small Mobile */
+        @media (max-width: 480px) {
+            .gallery-header {
+                padding: 0.6rem 1rem;
+            }
+
+            .gallery-header h1 {
+                font-size: 1.3rem;
+                letter-spacing: 0.5px;
+            }
+
+            .gallery-header p {
+                font-size: 0.8rem;
+            }
+
+            .reelsContainer {
+                width: 98vw;
+                height: calc(100vh - 110px);
+                gap: 0.4rem;
+            }
+
+            .reel {
+                min-height: calc(100vh - 130px);
+                border-radius: 12px;
+            }
+
+            .reel-text-overlay {
+                padding: 1rem;
+            }
+
+            .reel-text-overlay h2 {
+                font-size: 1rem;
+                margin-bottom: 0.4rem;
+            }
+
+            .reel-text-overlay p {
+                font-size: 0.9rem;
+            }
+
+            .play-icon {
+                width: 42px;
+                height: 42px;
+                font-size: 16px;
+                left: 10px;
+                top: 10px;
+            }
+
+            .load-more-button {
+                width: 85%;
+                max-width: 250px;
+                padding: 10px 20px;
+                font-size: 0.9rem;
+            }
+
+        /* Accessibility */
+        @media (prefers-reduced-motion: reduce) {
+            .reel,
+            .play-icon,
+            .load-more-button {
+                animation: none !important;
+                transition: none !important;
+            }
+        }
+
+        /* Dark Mode Support */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background: #000;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="gallery-header">
+        <h1>📰 AI CHRONICAL</h1>
+        <p>AI-Powered News Stories</p>
+    </header>
+
+    <!-- Main Gallery -->
+    <div class="gallery-wrapper">
+        <div class="reelsContainer" id="reelsContainer">
+            <!-- Images will be loaded here -->
+            <div class="empty-state">
+                <div class="empty-state-icon">📸</div>
+                <h2>Loading Stories...</h2>
+                <p>Generating AI news summaries</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load More Button -->
+    <div class="load-more-container">
+        <button id="loadMoreButton" class="load-more-button" onclick="loadMoreImages()">📥 Load More Stories</button>
+    </div>
+
+    <script>
+        console.log('gallery.html script start');
+        let audioPlaying = null;
+        let imageFiles = {{ image_files|tojson }};
+        console.log('imageFiles on load:', imageFiles);
+        let displayedImageCount = 0;
+        const imagesPerLoadInitial = 3;
+        const imagesPerLoadMore = 3;
+        const reelsContainer = document.getElementById('reelsContainer');
+        const loadMoreButton = document.getElementById('loadMoreButton');
+        const rss_url = "{{ rss_url }}";
+        let totalProcessedCount = {{ processed_count }};
+        console.log('totalProcessedCount on load:', totalProcessedCount);
+
+        // Clear empty state when first image loads
+        function clearEmptyState() {
+            const emptyState = reelsContainer.querySelector('.empty-state');
+            if (emptyState) {
+                emptyState.remove();
+            }
+        }
+
+        function playAudio(filename) {
+            if (audioPlaying) {
+                audioPlaying.pause();
+                audioPlaying.currentTime = 0;
+            }
+            let audioSrc = `static/images/${filename}.mp3`;
+            audioPlaying = new Audio(audioSrc);
+            audioPlaying.play().catch(err => console.error('Audio play error:', err));
+        }
+
+        function loadMoreImages() {
+            loadMoreButton.textContent = '⏳ Loading...';
+            loadMoreButton.disabled = true;
+            
+            fetch(`/load_more_images?rss_url=${encodeURIComponent(rss_url)}`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log('load_more_images response data:', data);
+                    if (data.image_files && data.image_files.length > 0) {
+                        imageFiles = imageFiles.concat(data.image_files);
+                        totalProcessedCount = data.processed_count;
+                        loadImagesToGallery(imagesPerLoadMore);
+                    }
+                    loadMoreButton.textContent = '📥 Load More Stories';
+                    loadMoreButton.disabled = false;
+                    updateLoadMoreButtonVisibility();
+                })
+                .catch(error => {
+                    console.error("Error loading more images:", error);
+                    loadMoreButton.textContent = '📥 Load More Stories';
+                    loadMoreButton.disabled = false;
+                });
+        }
+
+        function loadImagesToGallery(count) {
+            console.log('loadImagesToGallery called with count:', count);
+            console.log('Current imageFiles:', imageFiles);
+            clearEmptyState();
+            
+            for (let i = 0; i < count; i++) {
+                if (displayedImageCount < imageFiles.length) {
+                    const fileData = imageFiles[displayedImageCount];
+                    console.log('Processing fileData:', fileData, 'type:', typeof fileData);
+                    
+                    // Handle both string (filename) and object (filename + text) formats
+                    let filename, text;
+                    if (typeof fileData === 'string') {
+                        filename = fileData;
+                        text = 'AI News Summary';
+                    } else if (typeof fileData === 'object' && fileData !== null) {
+                        filename = fileData.filename || fileData;
+                        text = fileData.text || 'AI News Summary';
+                    } else {
+                        displayedImageCount++;
+                        continue;
+                    }
+                    
+                    console.log('Adding reel for:', filename, 'text:', text);
+                    
+                    const reelDiv = document.createElement('div');
+                    reelDiv.classList.add('reel');
+                    const audioFile = filename.replace('.jpg', '');
+                    const safeText = text.replace(/"/g, '&quot;');
+                    
+                    reelDiv.innerHTML = `
+                        <button class="play-icon" onclick="playAudio('${audioFile}')">▶</button>
+                        <img src="{{ url_for('static', filename='images/') }}${filename}" 
+                             alt="News Summary" 
+                             class="reel-image"
+                             loading="lazy">
+                        <div class="reel-text-overlay">
+                            <p>${safeText}</p>
+                        </div>
+                    `;
+                    reelsContainer.appendChild(reelDiv);
+                    displayedImageCount++;
+                } else {
+                    console.log('No more images to display');
+                    break;
+                }
+            }
+            updateLoadMoreButtonVisibility();
+        }
+
+        function updateLoadMoreButtonVisibility() {
+            console.log('updateLoadMoreButtonVisibility:', {displayedImageCount, totalProcessedCount, length: imageFiles.length});
+
+            // Keep the Load More button visible whenever there is at least one story,
+            // so users can always try to fetch more.
+            if (imageFiles && imageFiles.length > 0) {
+                loadMoreButton.style.display = 'block';
+            } else {
+                loadMoreButton.style.display = 'none';
+            }
+        }
+
+        // Initial load
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOMContentLoaded event fired');
+            console.log('Raw imageFiles:', imageFiles);
+            console.log('imageFiles type:', typeof imageFiles);
+            console.log('imageFiles.length:', imageFiles.length);
+            console.log('First item:', imageFiles[0]);
+            
+            // Ensure button text is correct
+            loadMoreButton.textContent = '📥 Load More Stories';
+            loadMoreButton.disabled = false;
+            
+            if (imageFiles && imageFiles.length > 0) {
+                loadImagesToGallery(imagesPerLoadInitial);
+            } else {
+                console.log('No images to load');
+            }
+            
+            // Safety timeout to reset button if stuck
+            setTimeout(() => {
+                if (loadMoreButton.textContent === '⏳ Loading...') {
+                    console.warn('Button stuck in loading state, resetting...');
+                    loadMoreButton.textContent = '📥 Load More Stories';
+                    loadMoreButton.disabled = false;
+                }
+                updateLoadMoreButtonVisibility();
+            }, 3000);
+        });
+    </script>
+</body>
+</html>
